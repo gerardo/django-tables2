@@ -180,7 +180,11 @@ class DeclarativeColumnsMetaclass(type):
                     try:
                         field = opts.model._meta.get_field(name)
                     except FieldDoesNotExist:
-                        extra[name] = columns.Column()
+                        # if there's no such field in the model and
+                        # it's a checkcolumn, don't create a plain column
+                        column = attrs['base_columns'].get(name, None)
+                        if column is None or not isinstance(column, columns.CheckBoxColumn):
+                            extra[name] = columns.Column()
                     else:
                         extra[name] = columns.library.column_for_field(field)
 
